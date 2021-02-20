@@ -4,17 +4,29 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	firebase "firebase.google.com/go"
 	jwtMiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/jackc/pgx/v4"
 	"google.golang.org/api/option"
 )
 
 var (
-	app *firebase.App
+	app            *firebase.App
+	repo *Repo
+	corsMiddleware = cors.New(cors.Config{
+		// AllowOrigins:     []string{"https://wheypal.com", "http://localhost:8080"},
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+		// AllowMethods:     []string{"*"},
+		AllowHeaders:     []string{"Authorization", "Origin", "Content-Length", "Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	})
 )
 
 const (
@@ -31,6 +43,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("error initializing app: %v", err)
 	}
+
+	repo = initDB(sqlConnString)
 
 	authMiddleware := func() gin.HandlerFunc {
 		return func(c *gin.Context) {
@@ -72,17 +86,15 @@ func main() {
 		})
 	})
 
+	r.GET("/profile", authMiddleware(), getProfile)
+	r.PUT("/profile", authMiddleware(), updateProfile)
+	r.GET("/discover", authMiddleware(), getLoc)
+	r.POST("/discover", authMiddleware(), postLoc)
+	r.DELETE("/match", authMiddleware(), deleteMatch)
+	r.GET("/match", authMiddleware(), getMatches)
+
 	// r.POST("/endpoint", authMiddleware(), endpointDandler)
 
 	r.Run(":8081") // listen and serve on 0.0.0.0:8081 (for windows "localhost:8081")
 }
 
-var corsMiddleware = cors.New(cors.Config{
-	// AllowOrigins:     []string{"https://wheypal.com", "http://localhost:8080"},
-	AllowOrigins: []string{"*"},
-	AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
-	// AllowMethods:     []string{"*"},
-	AllowHeaders:     []string{"Authorization", "Origin", "Content-Length", "Content-Type"},
-	AllowCredentials: true,
-	MaxAge:           12 * time.Hour,
-})

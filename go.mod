@@ -8,5 +8,6 @@ require (
 	github.com/auth0/go-jwt-middleware v1.0.0
 	github.com/gin-contrib/cors v1.3.1
 	github.com/gin-gonic/gin v1.6.3
+	github.com/jackc/pgx/v4 v4.10.1 // indirect
 	google.golang.org/api v0.40.0
 )

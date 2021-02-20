@@ -17,3 +17,4 @@ run:
 
 kill:
 	docker kill htn-backend
+	

@@ -13,23 +13,12 @@ import (
 	"google.golang.org/api/option"
 )
 
-/*
-Go-Firebase Template
-- HTTP REST JSON API --> DONE
-- Parse and validate Google Firebase Auth Token --> DONE
-- create valid routes that work with the Auth service --> DONE
-- CRUD (Create, read, update, delete) operations on a SQL database --> TODO
-- Get claims from auth token --> TODO
-- Set claims on user --> TODO
-*/
-
 var (
-	app        *firebase.App
-	// profileSrv profiles.ProfileService
+	app *firebase.App
 )
 
 const (
-	sqlConnString = "postgresql://alpha:alphakilo0001@free-tier.gcp-us-central1.cockroachlabs.cloud:26257/corny-baboon-155.dev?sslmode=verify-full&sslrootcert=secrets/hackthenorth-cockroachdb.crt"
+	sqlConnString = "postgres://allen:jzx5sWtgykoGDe8Y@free-tier.gcp-us-central1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full&sslrootcert=secrets/cc-ca.crt&options=--cluster=nimble-vole-835"
 )
 
 func main() {
@@ -37,7 +26,7 @@ func main() {
 	r := gin.Default()
 	r.Use(corsMiddleware)
 
-	opt := option.WithCredentialsFile("secrets/vue-firebase-key.json") //TO DO UPDATE KEY
+	opt := option.WithCredentialsFile("secrets/firebase-key.json") //TO DO UPDATE KEY
 	app, err := firebase.NewApp(context.Background(), nil, opt)
 	if err != nil {
 		log.Fatalf("error initializing app: %v", err)
@@ -70,9 +59,6 @@ func main() {
 			// log.Printf("UID %v", token.UID)
 		}
 	}
-
-	// profileSrv = profiles.NewProfileService(sqlConnString)
-
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

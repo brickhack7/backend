@@ -43,19 +43,18 @@ INSERT INTO loc_matches (uid, loc_id, status)
 VALUES ('5', '3', 1);
 
 --closest locations
-WITH user AS (SELECT lat, long FROM profiles WHERE uid = '3'),
-cte AS (
+WITH cte AS (
 SELECT 
 loc_id,
 city, 
 name,
 (
    6371 *
-   acos(cos(radians(user.lat)) * 
+   acos(cos(radians($2)) * 
    cos(radians(lat)) * 
    cos(radians(long) - 
-   radians(user.long)) + 
-   sin(radians(user.lat)) * 
+   radians($3)) + 
+   sin(radians($2)) * 
    sin(radians(lat )))
 ) AS distance 
 FROM locations )
@@ -79,6 +78,12 @@ GROUP BY uid)
 SELECT cte.uid FROM cte INNER JOIN profiles p on cte.uid = p.uid ORDER BY common DESC LIMIT 1;
 
 INSERT INTO user_matches (uid1, uid2, status)
-VALUES ('1', '5', 1);
+VALUES ('1', '2', 1);
+INSERT INTO user_matches (uid1, uid2, status)
+VALUES ('1', '3', 1);
+INSERT INTO user_matches (uid1, uid2, status)
+VALUES ('2', '5', 1);
+INSERT INTO user_matches (uid1, uid2, status)
+VALUES ('3', '5', 1);
 
 SELECT * FROM user_matches WHERE uid1 = '1' or uid2 = '1';

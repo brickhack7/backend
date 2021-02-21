@@ -2,18 +2,20 @@ package main
 
 import (
 	"context"
+	"log"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 func getProfile(c *gin.Context) {
-	var prof *profile
+	var prof *Profile
 	err := c.Bind(&prof)
 	if err != nil {
 		c.JSON(501, err)
 		return
 	}
-	err = repo.conn.QueryRow(context.Background(), selectProfileByID, &prof.id).Scan(&prof.lat, &prof.long, &prof.interests)
+	err = repo.conn.QueryRow(context.Background(), selectProfileByID, &prof.ID).Scan(&prof.Lat, &prof.Long, &prof.Interests)
 	if err != nil {
 		c.JSON(500, err)
 		return
@@ -22,34 +24,34 @@ func getProfile(c *gin.Context) {
 }
 
 func updateProfile(c *gin.Context) {
-	var prof *profile
+	var prof *Profile
 	err := c.Bind(&prof)
 	if err != nil {
 		c.JSON(501, err)
 		return
 	}
 
-	var oldProfile *profile
-	_, err = repo.conn.Exec(context.Background(), selectProfileByID, &oldProfile.id, &oldProfile.lat, &oldProfile.long, &oldProfile.interests)
+	var oldProfile *Profile
+	_, err = repo.conn.Exec(context.Background(), selectProfileByID, &oldProfile.ID, &oldProfile.Lat, &oldProfile.Long, &oldProfile.Interests)
 	if err != nil {
 		c.JSON(500, err)
 		return
 	}
 
-	if prof.id == "" {
-		prof.id = oldProfile.id
+	if prof.ID == "" {
+		prof.ID = oldProfile.ID
 	}
-	if prof.lat == 0 {
-		prof.lat = oldProfile.lat
+	if prof.Lat == 0 {
+		prof.Lat = oldProfile.Lat
 	}
-	if prof.long == 0 {
-		prof.long = oldProfile.long
+	if prof.Long == 0 {
+		prof.Long = oldProfile.Long
 	}
-	if prof.interests == nil {
-		prof.interests = oldProfile.interests
+	if prof.Interests == nil {
+		prof.Interests = oldProfile.Interests
 	}
 
-	_, err = repo.conn.Exec(context.Background(), updateProfilebyID, &prof.id, &prof.lat, &prof.long, &prof.interests)
+	_, err = repo.conn.Exec(context.Background(), updateProfilebyID, &prof.ID, &prof.Lat, &prof.Long, &prof.Interests)
 	if err != nil {
 		c.JSON(500, err)
 		return
@@ -65,27 +67,24 @@ func getLoc(c *gin.Context) {
 		long float64 `json:'long'`
 	}
 
-	var req *locReq
-	err := c.Bind(&req)
-	if err != nil {
-		c.JSON(501, err)
-		return
-	}
-
+	req := &locReq{}
+	req.lat, _ = strconv.ParseFloat(c.Query("lat"), 64)
+	req.long, _ = strconv.ParseFloat(c.Query("long"), 64)
 	req.uid = c.GetString("uid")
 
-	rows, err := repo.conn.Query(context.Background(), getLocsByGeo, req.uid, req.lat, req.long)
+	rows, err := repo.conn.Query(context.Background(), getLocsByGeo, &req.uid, &req.lat, &req.long)
 	if err != nil {
 		c.JSON(500, err)
 		return
 	}
 
-	locs := make([]*location, 0)
+	locs := make([]*Location, 0)
 
 	for rows.Next() {
-		loc := &location{}
-		err = rows.Scan(&loc.id, &loc.name, &loc.city, &loc.lat, &loc.long)
+		loc := &Location{}
+		err = rows.Scan(&loc.ID, &loc.Name, &loc.City, &loc.Distance)
 		if err != nil {
+			log.Printf("[Error] [getLoc] | %v", err)
 			c.JSON(501, err)
 			return
 		}
@@ -121,8 +120,8 @@ func postLoc(c *gin.Context) {
 		return
 	}
 
-	var prof *profile
-	err = repo.conn.QueryRow(context.Background(), selectProfileByID, &prof.id).Scan(&prof.lat, &prof.long, &prof.interests)
+	var prof *Profile
+	err = repo.conn.QueryRow(context.Background(), selectProfileByID, &prof.ID).Scan(&prof.Lat, &prof.Long, &prof.Interests)
 	if err != nil {
 		c.JSON(500, err)
 		return

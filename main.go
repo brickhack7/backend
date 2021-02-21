@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"time"
 
 	firebase "firebase.google.com/go"
 	jwtMiddleware "github.com/auth0/go-jwt-middleware"
@@ -14,17 +13,18 @@ import (
 )
 
 var (
-	app            *firebase.App
-	repo           *Repo
-	corsMiddleware = cors.New(cors.Config{
-		// AllowOrigins:     []string{"https://wheypal.com", "http://localhost:8080"},
-		AllowOrigins: []string{"*"},
-		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
-		// AllowMethods:     []string{"*"},
-		AllowHeaders:     []string{"Authorization", "Origin", "Content-Length", "Content-Type"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	})
+	app  *firebase.App
+	repo *Repo
+	// corsMiddleware = cors.New(cors.Config{
+	// 	// AllowOrigins:     []string{"https://wheypal.com", "http://localhost:8080"},
+	// 	// AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "HEAD"},
+	// 	// AllowHeaders:     []string{"Authorization", "Origin", "Content-Length", "Content-Type"},
+	// 	AllowOrigins:     []string{"*"},
+	// 	AllowMethods:     []string{"*"},
+	// 	AllowHeaders:     []string{"*"},
+	// 	AllowCredentials: true,
+	// 	MaxAge:           12 * time.Hour,
+	// })
 )
 
 const (
@@ -34,7 +34,6 @@ const (
 func main() {
 	fmt.Println("Starting Server")
 	r := gin.Default()
-	r.Use(corsMiddleware)
 
 	opt := option.WithCredentialsFile("secrets/firebase-key.json") //TO DO UPDATE KEY
 	app, err := firebase.NewApp(context.Background(), nil, opt)
@@ -67,7 +66,7 @@ func main() {
 
 			// log.Printf("Verified ID token: %v\n", token)
 			c.Set("token", token)
-			c.Set("UID", token.UID)
+			c.Set("uid", token.UID)
 			// log.Printf("UID %v", token.UID)
 		}
 	}
@@ -93,5 +92,6 @@ func main() {
 
 	// r.POST("/endpoint", authMiddleware(), endpointDandler)
 
+	r.Use(cors.Default())
 	r.Run(":8081") // listen and serve on 0.0.0.0:8081 (for windows "localhost:8081")
 }

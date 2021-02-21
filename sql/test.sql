@@ -43,24 +43,25 @@ INSERT INTO loc_matches (uid, loc_id, status)
 VALUES ('5', '3', 1);
 
 --closest locations
-WITH cte AS (
+WITH user AS (SELECT lat, long FROM profiles WHERE uid = '3'),
+cte AS (
 SELECT 
 loc_id,
 city, 
 name,
 (
    6371 *
-   acos(cos(radians(42)) * 
+   acos(cos(radians(user.lat)) * 
    cos(radians(lat)) * 
    cos(radians(long) - 
-   radians(50)) + 
-   sin(radians(42)) * 
+   radians(user.long)) + 
+   sin(radians(user.lat)) * 
    sin(radians(lat )))
 ) AS distance 
 FROM locations )
 SELECT *
 FROM cte
-WHERE cte.distance < 50
+WHERE cte.distance < 50 and cte.loc_id <> ALL(SELECT loc_id FROM loc_matches WHERE uid = '3')
 ORDER BY cte.distance LIMIT 20;
 
 --return the user which you share the most interests with, are not matched with and that has said yes to that location

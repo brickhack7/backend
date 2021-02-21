@@ -4,20 +4,18 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	firebase "firebase.google.com/go"
 	jwtMiddleware "github.com/auth0/go-jwt-middleware"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v4"
 	"google.golang.org/api/option"
 )
 
 var (
 	app            *firebase.App
-	repo *Repo
+	repo           *Repo
 	corsMiddleware = cors.New(cors.Config{
 		// AllowOrigins:     []string{"https://wheypal.com", "http://localhost:8080"},
 		AllowOrigins: []string{"*"},
@@ -44,7 +42,7 @@ func main() {
 		log.Fatalf("error initializing app: %v", err)
 	}
 
-	repo = initDB(sqlConnString)
+	repo = NewRepo(sqlConnString)
 
 	authMiddleware := func() gin.HandlerFunc {
 		return func(c *gin.Context) {
@@ -97,4 +95,3 @@ func main() {
 
 	r.Run(":8081") // listen and serve on 0.0.0.0:8081 (for windows "localhost:8081")
 }
-

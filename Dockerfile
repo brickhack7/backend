@@ -4,7 +4,6 @@ FROM golang:latest AS base
 WORKDIR /src
 ENV CGO_ENABLED=0
 COPY go.* .
-COPY profiles/go.* .
 RUN go mod download
 COPY . .
 
